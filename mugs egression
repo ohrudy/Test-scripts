@@ -1,0 +1,351 @@
+package MUGS;
+
+
+  
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import helpers.OETHelper;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.openqa.selenium.Alert;
+import org.openqa.selenium.By;
+import org.openqa.selenium.NoAlertPresentException;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+
+
+
+  @SuppressWarnings("unused")
+public class MugTestSuite {
+	  private WebDriver driver;
+	  private boolean acceptNextAlert = true;
+	  private StringBuffer verificationErrors = new StringBuffer();
+	  
+
+ 
+ 
+ @Before
+ public void setUp() throws Exception {
+   driver = new FirefoxDriver();   
+   driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+ }
+ 
+
+ @Test
+ public void vmugs() throws Exception {
+   // 1. Start Application 
+		System.out.println("starting app");
+   		ArrayList<String> list = new ArrayList<String>();
+   		String environment = "";	// either d-dtap., t-dtap., a-dtap. or nothing (i.e. production)
+   		String articleType = "Mug#";
+		String[] vendors   = { "albelli.nl", "albelli.co.uk", "albelli.be", "albelli.fr", "albelli.de", "allfoto.no", "onskefoto.se" }; // es, it exist but have no product!
+
+   		
+
+   			// loop through vendors (second largest list)
+   			for ( final String vendor : vendors )
+   			{
+   				System.out.println("loping through vendors");
+   				list.add( "http://editor." + environment + vendor + "/mug/3/?articleType=" + articleType + "/mug" );
+   				System.out.println(list);
+   			}
+   	
+   		
+   		String[] errors = {};	// will contain all URLs that failed to load
+   		
+   		// test all pages in order
+
+   		System.out.println("Retrieving items with loop using index and size list");
+   		
+   		for (int i = 0; i < list.size(); i++)
+   		{
+   			driver = new FirefoxDriver();
+   		    driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+   		    
+   			System.out.println("Index: " + i + " - Item: " + list.get(i));	
+   			
+   			driver.get(list.get(i));
+   			
+   		     System.out.println("Start Mug regression");
+   		     verifyProductTitle();
+   			 verifyPriceDisplayed();
+   			 verifyShippingLinkActive();
+   			 verifyPageTitle();
+   			 verifySelectPhotosButton();
+   			 verifyCanvasProductGraphic();
+   			 verifyPhotoSelectButton();
+   			 verifyProductCanvas();
+   			 verifyToolTips() ;
+   			 loadPhoto();
+   			 rotateRight();
+   			 rotateLeft();
+   			 CheckFilterButtons();
+   			 verifyRatings();
+   			 verifyOrderButton();
+   			 zoomSlider();
+   			 colorFilterSelected();
+   			 bwFilterSelected();
+   			 sepiaFilterSelected();
+   			 verifyFilterText();
+   			 clickOrderbutton(); 
+      		 driver.quit();
+   			 OETHelper.acceptPageReload( driver ); // dismiss the spawned "exit confirmation"-dialog so we can actually close the browser
+   
+   		}
+   		
+   		// all pages finished loading, throw Error if pages have failed to load
+   		
+   		if ( errors.length > 0 )
+   		{
+   			// had errors
+   			throw new Exception( errors.toString() );
+   		}
+ 
+ }
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+		  
+	   
+
+		
+		  public void verifyProductTitle() throws Exception 
+		  {	
+		  	System.out.println("verify that the product title is correct");
+		  	WebElement ProductTitle = driver.findElement(By.id("productTitle"));
+		  	System.out.println("this is The Screen title from id -->"+ProductTitle.getText());
+		  }
+		  
+		
+		  public void verifyPriceDisplayed() throws Exception 
+		  {	
+		  	System.out.println("verify that the price is displayed");  
+		  	WebElement ProductPrice= driver.findElement(By.id("productPriceAndShip"));
+			System.out.println("This is The Product Price "+ProductPrice.getText());
+		  }
+
+		  
+		  public void verifyShippingLinkActive() throws Exception 
+		  {	
+		  	System.out.println("verify that the postage and handling link is active");
+			assertTrue(isElementPresent(By.id("shipCostLink")));
+		  }
+				
+		  
+		  public void verifyPageTitle() throws Exception 
+		  {	
+		  	System.out.println("verify that the page title is correct"); 
+			assertEquals("Mug Editor", driver.getTitle());
+		  }
+	   
+		  
+		  public void verifySelectPhotosButton() throws Exception 
+		  {	
+		  	System.out.println("verify that the select photos button on canvas is present"); 
+			assertTrue(isElementPresent(By.id("photoSelectOnCanvasButton")));
+		  }
+	
+
+		  public void verifyCanvasProductGraphic() throws Exception 
+		  {	
+		  	System.out.println("verify that the mug graphic is diplayed");
+			assertTrue(isElementPresent(By.id("productCanvas")));
+		  }
+			
+		
+		  public void verifyPhotoSelectButton() throws Exception 
+		  {		
+		  	System.out.println("Verify that the big Select button is visible");
+			assertTrue(isElementPresent(By.id("photoSelectButton")));
+			return;
+		  }
+			
+	
+		  public void verifyProductCanvas() throws Exception 
+		  {	
+			System.out.println("verify  the size of the canvas is present and correct.");
+			WebElement canvasSize = driver.findElement(By.id("productCanvas"));
+			System.out.println(canvasSize.getSize());
+		  }
+		  
+	
+		  public void verifyToolTips() throws Exception 
+		  {	
+		  System.out.println(" verify that the tool tip are present.");
+	       assertTrue(isElementPresent(By.cssSelector(".hover-info")));
+	       assertTrue(isElementPresent(By.cssSelector(".hover-info:nth-of-type(2)")));
+	       assertTrue(isElementPresent(By.cssSelector(".hover-info:nth-of-type(3)"))); 
+
+		  }
+		  
+		  
+		  public void loadPhoto() throws Exception
+		  {
+			  System.out.println("Load Photo"); 
+			  WebElement input = driver.findElement(By.cssSelector("input[type=\"file\"]"));
+			  System.out.println( "retrieved element > " + ( input != null ));
+			  input.click();
+			  input.sendKeys("/Users/rnorton/Desktop/images.jpg");
+			  driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+			  return;
+		  }
+		  
+
+		  public void rotateRight() throws Exception 
+		  {
+			  System.out.println("rotate right");
+			  driver.findElement(By.id("rotateRightButton")).click();
+
+		  }
+		  
+
+		  public void rotateLeft() throws Exception 
+		  {
+			  System.out.println("rotate Left");
+			  driver.findElement(By.id("rotateLeftButton")).click();
+
+		  }
+		  
+
+		  public void CheckFilterButtons() throws Exception 
+		  {
+			  System.out.println("CheckFilterButtons");
+			    assertTrue(isElementPresent(By.id("colorFilterButton")));
+			    assertTrue(isElementPresent(By.id("bwFilterButton")));
+			    assertTrue(isElementPresent(By.id("sepiaFilterButton")));
+		  }
+
+		  public void verifyRatings() throws Exception 
+		  {
+			  System.out.println("verifyRatings");
+			  	assertTrue(isElementPresent(By.id("ratingValue")));
+			    assertTrue(isElementPresent(By.id("ratingValueBar")));
+		  }
+		  
+ 
+		  public void verifyOrderButton() throws Exception 
+		  {
+			  System.out.println("verifyOrderButton");
+			  assertTrue(isElementPresent(By.id("orderButton")));
+		  }
+		  
+
+		  public void zoomSlider() throws Exception 
+		  {		  
+			  System.out.println("zoomSlider buttons present and clickable");
+			  driver.findElement(By.id("zoomLargeScaleButton")).click();
+			  driver.findElement(By.id("zoomSmallScaleButton")).click();
+		  }
+		  
+
+		  public void colorFilterSelected() throws Exception 
+		  {	  
+			  System.out.println("colorFilterSelected");
+			  driver.findElement(By.id("colorFilterButton")).click();
+			  assertTrue(isElementPresent(By.id("colorFilterSelected")));
+		  }
+		  
+
+		  public void bwFilterSelected() throws Exception 
+		  {
+			  System.out.println("bwFilterSelected");
+			  driver.findElement(By.id("bwFilterButton")).click();
+			  assertTrue(isElementPresent(By.id("bwFilterSelected")));
+		  }
+		  
+
+		  public void sepiaFilterSelected() throws Exception 
+		  {			  
+			  System.out.println("sepiaFilterSelected");
+			  driver.findElement(By.id("sepiaFilterButton")).click();
+			  assertTrue(isElementPresent(By.id("sepiaFilterSelected")));
+		  }
+
+		  public void verifyFilterText() throws Exception 
+		  {
+			  System.out.println("verifyFilterText");
+			  assertTrue(isElementPresent(By.id("colorFilterText")));
+			  assertTrue(isElementPresent(By.id("bwFilterText")));
+			  assertTrue(isElementPresent(By.id("sepiaFilterText")));
+		  }
+		  
+
+		  public void clickOrderbutton() throws Exception 
+		  {			  
+			  System.out.println("clickOrderbutton");
+			  driver.findElement(By.id("orderButton")).click();
+
+		  }
+		  
+		
+		  
+		  
+		
+		  
+		  
+		  
+		  @After
+		  public void tearDown() throws Exception {
+		    driver.quit();
+			  
+		    String verificationErrorString = verificationErrors.toString();
+		    if (!"".equals(verificationErrorString)) {
+		      fail(verificationErrorString);
+		    }
+		  }
+
+		  private boolean isElementPresent(By by) {
+		    try {
+		      driver.findElement(by);
+		      return true;
+		    } catch (NoSuchElementException e) {
+		      return false;
+		    }
+		  }
+
+		  private boolean isAlertPresent() {
+		    try {
+		      driver.switchTo().alert();
+		      return true;
+		    } catch (NoAlertPresentException e) {
+		      return false;
+		    }
+		  }
+
+		  private String closeAlertAndGetItsText() {
+		    try {
+		      Alert alert = driver.switchTo().alert();
+		      String alertText = alert.getText();
+		      if (acceptNextAlert) {
+		        alert.accept();
+		      } else {
+		        alert.dismiss();
+		      }
+		      return alertText;
+		    } finally {
+		      acceptNextAlert = true;
+		    }
+		  }
+		}
